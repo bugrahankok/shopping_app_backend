@@ -45,13 +45,27 @@ public class UserService implements UserDetailsService {
         return userRepository.findByUsername(username).map(User::getRole);
     }
 
+    public Optional<Long> getUserId(String username) {
+        return userRepository.findByUsername(username).map(User::getId);
+    }
+
+    public Optional<Double> getBalanceById(Long id) {
+        Optional<User> user = userRepository.findById(id);
+        return user.map(User::getBalance);
+    }
+
+    public Optional<User> findById(Long userId) {
+        return userRepository.findById(userId);
+    }
+
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
 
-    public void updateBalance(Long userId, double amount) {
+    public void updateBalance(Long userId, double newBalance) {
+        System.out.println("Kullanıcı ID: " + userId + ", Yeni Bakiye: " + newBalance);
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("Kullanıcı bulunamadı."));
-        user.setBalance(user.getBalance() - amount);
+        user.setBalance(newBalance);
         userRepository.save(user);
     }
 

@@ -56,8 +56,10 @@ public class AuthController {
             String jwt = jwtUtils.generateToken(userDetails);
 
             int role = userService.getUserRole(user.getUsername()).orElse(0);
+            Long id = userService.getUserId(user.getUsername()).orElse(null);
+            double balance = userService.getBalanceById(id).orElse(0.0);
 
-            return ResponseEntity.ok(new JwtResponse(jwt, role));
+            return ResponseEntity.ok(new JwtResponse(jwt, role, id, balance));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Giriş başarısız: " + e.getMessage());
         }
@@ -74,6 +76,7 @@ public class AuthController {
             userDto.put("username", user.getUsername());
             userDto.put("email", user.getEmail());
             userDto.put("role", user.getRole());
+            userDto.put("balance", user.getBalance());
             userDtos.add(userDto);
         }
 
@@ -81,7 +84,29 @@ public class AuthController {
     }
 
     @PutMapping("/updateBalance/{userId}")
-    public void updateBalance(@PathVariable Long userId, @RequestParam double amount) {
-        userService.updateBalance(userId, amount);
+    public ResponseEntity<String> updateBalance(@PathVariable Long userId, @RequestBody Map<String, Double> balanceUpdate) {
+        Double newBalance = balanceUpdate.get("balance");
+        if (newBalance == null) {
+            return ResponseEntity.badRequest().body("Yeni bakiye belirtilmelidir.");
+        }
+
+        // UserRepository yerine userService kullan
+        User user = userService.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Kullanıcı bulunamadı."));
+        user.setBalance(newBalance);
+        userService.save(user); // userRepository.save(user);
+
+        return ResponseEntity.ok("Bakiye güncellendi.");
+    }
+
+    @GetMapping("/balance/{userId}")
+    public ResponseEntity<Double> getBalanceById(@PathVariable Long userId) {
+        Optional<User> userOptional = userService.findById(userId);
+        if (userOptional.isPresent()) {
+            double balance = userOptional.get().getBalance();
+            return ResponseEntity.ok(balance);
+        } else {
+            return ResponseEntity.status(404).body(null);
+        }
     }
 }
