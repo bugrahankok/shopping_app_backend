@@ -1,5 +1,6 @@
 package com.bugrashopping.shoppingapp.controller;
 
+import com.bugrashopping.shoppingapp.aop.RateLimited;
 import com.bugrashopping.shoppingapp.model.Product;
 import com.bugrashopping.shoppingapp.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,16 +17,19 @@ public class ProductController {
     @Autowired
     private ProductService productService;
 
+    @RateLimited(timeWindow = 60, maxRequests = 15)
     @GetMapping("/getAll")
     public List<Product> getAllProducts() {
         return productService.getAllProducts();
     }
 
+    @RateLimited(timeWindow = 60, maxRequests = 5)
     @PostMapping("/add")
     public Product addProduct(@RequestBody Product product) {
         return productService.saveProduct(product);
     }
 
+    @RateLimited(timeWindow = 60, maxRequests = 5)
     @PutMapping("/update/{id}")
     public Product updateProduct(@PathVariable Long id, @RequestBody Product product) {
         return productService.updateProduct(id, product);

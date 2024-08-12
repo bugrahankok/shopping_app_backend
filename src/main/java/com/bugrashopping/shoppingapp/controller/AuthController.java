@@ -1,5 +1,6 @@
 package com.bugrashopping.shoppingapp.controller;
 
+import com.bugrashopping.shoppingapp.aop.RateLimited;
 import com.bugrashopping.shoppingapp.model.JwtResponse;
 import com.bugrashopping.shoppingapp.model.User;
 import com.bugrashopping.shoppingapp.service.UserService;
@@ -65,6 +66,7 @@ public class AuthController {
         }
     }
 
+    @RateLimited(timeWindow = 60, maxRequests = 15)
     @GetMapping("/users")
     public ResponseEntity<List<Map<String, Object>>> getUsers() {
         List<User> users = userService.getAllUsers();
@@ -90,11 +92,10 @@ public class AuthController {
             return ResponseEntity.badRequest().body("Yeni bakiye belirtilmelidir.");
         }
 
-        // UserRepository yerine userService kullan
         User user = userService.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Kullanıcı bulunamadı."));
         user.setBalance(newBalance);
-        userService.save(user); // userRepository.save(user);
+        userService.save(user);
 
         return ResponseEntity.ok("Bakiye güncellendi.");
     }
