@@ -19,13 +19,11 @@ public class SaleController {
     @Autowired
     private SaleService saleService;
 
-    @RateLimited(timeWindow = 60, maxRequests = 15)
     @GetMapping("/getAll")
     public List<Sale> getAllSales() {
         return saleService.getAllSales();
     }
 
-    @RateLimited(timeWindow = 60, maxRequests = 5)
     @PostMapping("/add")
     public Sale addSale(@RequestBody Sale sale) {
         return saleService.saveSale(sale);
