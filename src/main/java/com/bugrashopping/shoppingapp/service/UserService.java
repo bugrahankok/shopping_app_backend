@@ -1,5 +1,6 @@
 package com.bugrashopping.shoppingapp.service;
 
+import com.bugrashopping.shoppingapp.model.Product;
 import com.bugrashopping.shoppingapp.model.User;
 import com.bugrashopping.shoppingapp.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;

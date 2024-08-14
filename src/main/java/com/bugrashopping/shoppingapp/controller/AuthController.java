@@ -2,6 +2,7 @@ package com.bugrashopping.shoppingapp.controller;
 
 import com.bugrashopping.shoppingapp.aop.RateLimited;
 import com.bugrashopping.shoppingapp.model.JwtResponse;
+import com.bugrashopping.shoppingapp.model.Product;
 import com.bugrashopping.shoppingapp.model.User;
 import com.bugrashopping.shoppingapp.service.UserService;
 import com.bugrashopping.shoppingapp.security.JwtUtils;
@@ -110,4 +111,5 @@ public class AuthController {
             return ResponseEntity.status(404).body(null);
         }
     }
+
 }
