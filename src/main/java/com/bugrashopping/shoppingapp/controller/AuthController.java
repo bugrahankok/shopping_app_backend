@@ -7,6 +7,7 @@ import com.bugrashopping.shoppingapp.model.User;
 import com.bugrashopping.shoppingapp.service.UserService;
 import com.bugrashopping.shoppingapp.security.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -61,10 +62,51 @@ public class AuthController {
             Long id = userService.getUserId(user.getUsername()).orElse(null);
             double balance = userService.getBalanceById(id).orElse(0.0);
 
-            return ResponseEntity.ok(new JwtResponse(jwt, role, id, balance));
+            JwtResponse jwtResponse = new JwtResponse(jwt, role, id, balance, user.getUsername());
+
+            return ResponseEntity.ok(jwtResponse);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Giriş başarısız: " + e.getMessage());
         }
+    }
+
+
+    @DeleteMapping("/deleteUser/{userId}")
+    public ResponseEntity<String> deleteUser(@PathVariable Long userId) {
+        if (!userService.existsById(userId)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Kullanıcı bulunamadı.");
+        }
+        userService.deleteById(userId);
+        return ResponseEntity.ok("Kullanıcı silindi.");
+    }
+
+    @PutMapping("/updateUser/{userId}")
+    public ResponseEntity<String> updateUser(@PathVariable Long userId, @RequestBody Map<String, String> updateRequest) {
+        String newUsername = updateRequest.get("username");
+        String newEmail = updateRequest.get("email");
+        String newPassword = updateRequest.get("newPassword");
+        String balanceString = updateRequest.get("balance");
+
+        User user = userService.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Kullanıcı bulunamadı."));
+
+        if (newUsername != null && !newUsername.isEmpty()) {
+            user.setUsername(newUsername);
+        }
+        if (newEmail != null && !newEmail.isEmpty()) {
+            user.setEmail(newEmail);
+        }
+        if (newPassword != null && !newPassword.isEmpty()) {
+            user.setPassword(passwordEncoder.encode(newPassword));
+        }
+        if (balanceString != null && !balanceString.isEmpty()) {
+            double newBalance = Double.parseDouble(balanceString);
+            user.setBalance(newBalance);
+        }
+
+        userService.save(user);
+
+        return ResponseEntity.ok("Kullanıcı başarıyla güncellendi.");
     }
 
     @RateLimited(timeWindow = 60, maxRequests = 15)
@@ -84,6 +126,12 @@ public class AuthController {
         }
 
         return ResponseEntity.ok(userDtos);
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<User> getUserInfoById(@PathVariable Long userId) {
+        Optional<User> userOptional = userService.getUserInfoById(userId);
+        return userOptional.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PutMapping("/updateBalance/{userId}")

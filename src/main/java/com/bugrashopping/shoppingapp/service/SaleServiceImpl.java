@@ -1,8 +1,6 @@
 package com.bugrashopping.shoppingapp.service;
 
-import com.bugrashopping.shoppingapp.model.Product;
 import com.bugrashopping.shoppingapp.model.Sale;
-import com.bugrashopping.shoppingapp.repository.ProductRepository;
 import com.bugrashopping.shoppingapp.repository.SaleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,4 +23,8 @@ public class SaleServiceImpl implements SaleService {
         return saleRepository.findAll();
     }
 
+    @Override
+    public List<Sale> getSalesByUserId(Long userId) {
+        return saleRepository.findByUserId(userId);
+    }
 }

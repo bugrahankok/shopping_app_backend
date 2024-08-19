@@ -5,8 +5,10 @@ public class JwtResponse {
     private int role;
     private Long id;
     private double balance;
+    private String username;
 
-    public JwtResponse(String token, int role, Long id, double balance) {
+    public JwtResponse(String token, int role, Long id, double balance, String username) {
+        this.username = username;
         this.token = token;
         this.role = role;
         this.id = id;
@@ -35,6 +37,14 @@ public class JwtResponse {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public double getBalance() {

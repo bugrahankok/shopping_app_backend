@@ -63,11 +63,23 @@ public class UserService implements UserDetailsService {
         return userRepository.findAll();
     }
 
+    public Optional<User> getUserInfoById(Long userId) {
+        return userRepository.findById(userId);
+    }
+
     public void updateBalance(Long userId, double newBalance) {
         System.out.println("Kullanıcı ID: " + userId + ", Yeni Bakiye: " + newBalance);
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("Kullanıcı bulunamadı."));
         user.setBalance(newBalance);
         userRepository.save(user);
+    }
+
+    public boolean existsById(Long userId) {
+        return userRepository.existsById(userId);
+    }
+
+    public void deleteById(Long userId) {
+        userRepository.deleteById(userId);
     }
 
 }

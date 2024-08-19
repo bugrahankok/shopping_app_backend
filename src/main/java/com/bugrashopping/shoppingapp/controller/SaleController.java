@@ -1,12 +1,8 @@
 package com.bugrashopping.shoppingapp.controller;
 
-import com.bugrashopping.shoppingapp.aop.RateLimited;
-import com.bugrashopping.shoppingapp.model.Product;
 import com.bugrashopping.shoppingapp.model.Sale;
-import com.bugrashopping.shoppingapp.service.ProductService;
 import com.bugrashopping.shoppingapp.service.SaleService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,9 +20,14 @@ public class SaleController {
         return saleService.getAllSales();
     }
 
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<Sale>> getSalesByUserId(@PathVariable Long userId) {
+        List<Sale> userSales = saleService.getSalesByUserId(userId);
+        return ResponseEntity.ok(userSales);
+    }
+
     @PostMapping("/add")
     public Sale addSale(@RequestBody Sale sale) {
         return saleService.saveSale(sale);
     }
 }
-

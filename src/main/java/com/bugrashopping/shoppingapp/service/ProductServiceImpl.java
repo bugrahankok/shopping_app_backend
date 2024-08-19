@@ -31,6 +31,7 @@ public class ProductServiceImpl implements ProductService {
             product.setQuantity(updatedProduct.getQuantity());
             product.setPrice(updatedProduct.getPrice());
             product.setCompleted(updatedProduct.isCompleted());
+            product.setImage(updatedProduct.getImage()); // Resim URL'sini güncelle
             return productRepository.save(product);
         }).orElseThrow(() -> new RuntimeException("Product not found"));
     }

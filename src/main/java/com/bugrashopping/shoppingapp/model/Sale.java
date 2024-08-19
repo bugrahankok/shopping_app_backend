@@ -17,6 +17,7 @@ public class Sale {
     private Long productId;
     private int quantity;
     private double price;
+    private Long userId;
 
     @Column(name = "sale_date")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
@@ -55,6 +56,14 @@ public class Sale {
 
     public void setPrice(double price) {
         this.price = price;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 
     public LocalDateTime getSaleDate() {

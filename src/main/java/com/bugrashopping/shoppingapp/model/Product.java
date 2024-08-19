@@ -15,6 +15,7 @@ public class Product {
     private int quantity;
     private double price;
     private boolean completed;
+    private String image;
 
     public Product() {
     }
@@ -65,5 +66,13 @@ public class Product {
 
     public void setCompleted(boolean completed) {
         this.completed = completed;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
     }
 }
