@@ -4,6 +4,7 @@ import com.bugrashopping.shoppingapp.aop.RateLimited;
 import com.bugrashopping.shoppingapp.model.JwtResponse;
 import com.bugrashopping.shoppingapp.model.Product;
 import com.bugrashopping.shoppingapp.model.User;
+import com.bugrashopping.shoppingapp.service.EmailService;
 import com.bugrashopping.shoppingapp.service.UserService;
 import com.bugrashopping.shoppingapp.security.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,12 +28,17 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public AuthController(UserService userService, AuthenticationManager authenticationManager, JwtUtils jwtUtils, PasswordEncoder passwordEncoder) {
+    public AuthController(UserService userService, AuthenticationManager authenticationManager, JwtUtils jwtUtils, PasswordEncoder passwordEncoder, EmailService emailService) {
         this.userService = userService;
         this.authenticationManager = authenticationManager;
         this.jwtUtils = jwtUtils;
         this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
     }
+
+
+    @Autowired
+    private EmailService emailService;
 
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody User user) {
@@ -44,18 +50,45 @@ public class AuthController {
         }
         user.setBalance(0.0);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setVerified(false);
+        String verificationCode = emailService.sendVerificationCode(user.getEmail());
+        user.setVerificationCode(verificationCode);
         userService.save(user);
-        return ResponseEntity.ok("Kullanıcı başarıyla kaydedildi.");
+        return ResponseEntity.ok("Kullanıcı başarıyla kaydedildi. E-posta doğrulama kodunu giriniz.");
+    }
+
+    @PostMapping("/verify")
+    public ResponseEntity<String> verifyEmail(@RequestBody Map<String, String> request) {
+        String username = request.get("username");
+        String code = request.get("code");
+
+        User user = userService.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Kullanıcı bulunamadı."));
+
+        if (user.getVerificationCode().equals(code)) {
+            user.setVerified(true);
+            userService.save(user);
+            return ResponseEntity.ok("Email başarıyla doğrulandı.");
+        } else {
+            return ResponseEntity.badRequest().body("Geçersiz doğrulama kodu.");
+        }
     }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody User user) {
         try {
+            UserDetails userDetails = userService.loadUserByUsername(user.getUsername());
+            User existingUser = userService.findByUsername(user.getUsername())
+                    .orElseThrow(() -> new RuntimeException("Kullanıcı bulunamadı."));
+
+            if (!existingUser.isVerified()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Lütfen önce e-posta adresinizi doğrulayın.");
+            }
+
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword())
             );
 
-            UserDetails userDetails = userService.loadUserByUsername(user.getUsername());
             String jwt = jwtUtils.generateToken(userDetails);
 
             int role = userService.getUserRole(user.getUsername()).orElse(0);
@@ -69,7 +102,6 @@ public class AuthController {
             return ResponseEntity.badRequest().body("Giriş başarısız: " + e.getMessage());
         }
     }
-
 
     @DeleteMapping("/deleteUser/{userId}")
     public ResponseEntity<String> deleteUser(@PathVariable Long userId) {

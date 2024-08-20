@@ -14,6 +14,8 @@ public class User {
     private String password;
     private String email;
     private double balance;
+    private boolean verified;
+    private String verificationCode;
 
     public Long getId() {
         return id;
@@ -61,6 +63,22 @@ public class User {
 
     public void setBalance(double balance) {
         this.balance = balance;
+    }
+
+    public boolean isVerified() {
+        return verified;
+    }
+
+    public void setVerified(boolean verified) {
+        this.verified = verified;
+    }
+
+    public String getVerificationCode() {
+        return verificationCode;
+    }
+
+    public void setVerificationCode(String verificationCode) {
+        this.verificationCode = verificationCode;
     }
 }
 
