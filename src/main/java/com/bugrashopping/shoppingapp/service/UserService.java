@@ -1,8 +1,8 @@
 package com.bugrashopping.shoppingapp.service;
-
-import com.bugrashopping.shoppingapp.model.Product;
 import com.bugrashopping.shoppingapp.model.User;
 import com.bugrashopping.shoppingapp.repository.UserRepository;
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -14,14 +14,10 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
-
-    @Autowired
-    public UserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
 
     public void save(User user) {
         userRepository.save(user);
