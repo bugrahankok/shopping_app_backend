@@ -40,6 +40,8 @@ public class SecurityConfig {
         return http.build();
     }
 
+
+
     @Bean
     public AuthenticationManager authManager(HttpSecurity http) throws Exception {
         AuthenticationManagerBuilder authenticationManagerBuilder =

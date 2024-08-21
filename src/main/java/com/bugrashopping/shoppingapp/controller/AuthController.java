@@ -2,11 +2,11 @@ package com.bugrashopping.shoppingapp.controller;
 
 import com.bugrashopping.shoppingapp.aop.RateLimited;
 import com.bugrashopping.shoppingapp.model.JwtResponse;
+import com.bugrashopping.shoppingapp.model.Product;
 import com.bugrashopping.shoppingapp.model.User;
-import com.bugrashopping.shoppingapp.security.JwtUtils;
 import com.bugrashopping.shoppingapp.service.EmailService;
 import com.bugrashopping.shoppingapp.service.UserService;
-import lombok.RequiredArgsConstructor;
+import com.bugrashopping.shoppingapp.security.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,14 +20,25 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/auth")
-@RequiredArgsConstructor
 public class AuthController {
 
     private final UserService userService;
     private final AuthenticationManager authenticationManager;
     private final JwtUtils jwtUtils;
     private final PasswordEncoder passwordEncoder;
-    private final EmailService emailService;
+
+    @Autowired
+    public AuthController(UserService userService, AuthenticationManager authenticationManager, JwtUtils jwtUtils, PasswordEncoder passwordEncoder, EmailService emailService) {
+        this.userService = userService;
+        this.authenticationManager = authenticationManager;
+        this.jwtUtils = jwtUtils;
+        this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
+    }
+
+
+    @Autowired
+    private EmailService emailService;
 
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody User user) {
@@ -51,7 +62,8 @@ public class AuthController {
         String username = request.get("username");
         String code = request.get("code");
 
-        User user = userService.findByUsername(username).orElseThrow(() -> new RuntimeException("Kullanıcı bulunamadı."));
+        User user = userService.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Kullanıcı bulunamadı."));
 
         if (user.getVerificationCode().equals(code)) {
             user.setVerified(true);
@@ -66,13 +78,16 @@ public class AuthController {
     public ResponseEntity<?> login(@RequestBody User user) {
         try {
             UserDetails userDetails = userService.loadUserByUsername(user.getUsername());
-            User existingUser = userService.findByUsername(user.getUsername()).orElseThrow(() -> new RuntimeException("Kullanıcı bulunamadı."));
+            User existingUser = userService.findByUsername(user.getUsername())
+                    .orElseThrow(() -> new RuntimeException("Kullanıcı bulunamadı."));
 
             if (!existingUser.isVerified()) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Lütfen önce e-posta adresinizi doğrulayın.");
             }
 
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword())
+            );
 
             String jwt = jwtUtils.generateToken(userDetails);
 
@@ -104,7 +119,8 @@ public class AuthController {
         String newPassword = updateRequest.get("newPassword");
         String balanceString = updateRequest.get("balance");
 
-        User user = userService.findById(userId).orElseThrow(() -> new RuntimeException("Kullanıcı bulunamadı."));
+        User user = userService.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Kullanıcı bulunamadı."));
 
         if (newUsername != null && !newUsername.isEmpty()) {
             user.setUsername(newUsername);
@@ -157,7 +173,8 @@ public class AuthController {
             return ResponseEntity.badRequest().body("Yeni bakiye belirtilmelidir.");
         }
 
-        User user = userService.findById(userId).orElseThrow(() -> new RuntimeException("Kullanıcı bulunamadı."));
+        User user = userService.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Kullanıcı bulunamadı."));
         user.setBalance(newBalance);
         userService.save(user);
 
