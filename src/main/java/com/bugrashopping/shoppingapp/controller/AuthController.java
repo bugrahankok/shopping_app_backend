@@ -36,7 +36,6 @@ public class AuthController {
         this.emailService = emailService;
     }
 
-
     @Autowired
     private EmailService emailService;
 
